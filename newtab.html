@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sqwizzey Tab</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="bgLayer" class="bg-layer"></div>
+  <div id="app" class="app">
+    <header class="topbar">
+      <nav id="pagesNav" class="pages-nav" aria-label="Страницы"></nav>
+      <button id="addPageBtn" class="square-btn" title="Добавить страницу">+</button>
+
+      <div class="search-wrap">
+        <input id="searchInput" type="search" placeholder="поиск по закладкам, доскам и страницам..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      </div>
+    </header>
+
+    <main class="main">
+      <section id="boardsGrid" class="boards-grid"></section>
+    </main>
+
+    <aside class="floating-actions" aria-label="Быстрые действия">
+      <button id="focusSearchBtn" title="Поиск">⌕</button>
+      <button id="saveTabsBtn" title="Сохранить текущее окно как доску">⇩</button>
+      <button id="tabsBtn" title="Текущие вкладки">▣</button>
+      <button id="trashBtn" title="Корзина">🗑</button>
+      <button id="importBookmarksBtn" title="Импортировать закладки Chrome">☷</button>
+      <button id="exportBtn" title="Экспорт JSON">⤓</button>
+      <label class="float-file" title="Импорт JSON">
+        ⤒
+        <input id="importFile" type="file" accept="application/json" />
+      </label>
+      <button id="settingsBtn" class="settings-action" title="Настройки">⚙</button>
+    </aside>
+
+    <button id="wallpaperQuickBtn" class="wallpaper-btn" title="Стиль и фон">▧</button>
+
+    <div id="menuLayer" class="menu-layer hidden"></div>
+
+    <dialog id="pageDialog">
+      <form method="dialog" class="dialog-card">
+        <h3 id="pageDialogTitle">Переименовать страницу</h3>
+        <label>
+          Название страницы *
+          <input id="pageTitleField" type="text" placeholder="Home" />
+        </label>
+        <menu>
+          <button value="cancel" class="btn ghost"><span data-i18n="cancel">Отмена</span></button>
+          <button id="savePageDialogBtn" type="button" value="default" class="btn primary"><span data-i18n="save">Сохранить</span></button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="boardDialog">
+      <form method="dialog" class="dialog-card">
+        <h3 id="boardDialogTitle">Редактировать доску</h3>
+        <label>
+          Название доски *
+          <input id="boardTitleField" type="text" placeholder="Например: Работа" />
+        </label>
+        <menu>
+          <button value="cancel" class="btn ghost"><span data-i18n="cancel">Отмена</span></button>
+          <button id="saveBoardDialogBtn" type="button" value="default" class="btn primary"><span data-i18n="save">Сохранить</span></button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="tabsDialog">
+      <form method="dialog" class="dialog-card wide-dialog">
+        <div class="dialog-head">
+          <div>
+            <h3>Текущие вкладки</h3>
+            <p>Можно сохранить окно как доску или закрыть мусор. Да, тот самый мусор из 37 вкладок.</p>
+          </div>
+          <button id="refreshTabsBtn" type="button" class="btn ghost">Обновить</button>
+        </div>
+        <div id="tabsList" class="tabs-list"></div>
+        <menu>
+          <button value="cancel" class="btn ghost"><span data-i18n="close">Закрыть</span></button>
+          <button id="saveTabsFromDialogBtn" type="button" value="default" class="btn primary">Save Window</button>
+        </menu>
+      </form>
+    </dialog>
+
+
+    <dialog id="generalSettingsDialog">
+      <form method="dialog" class="dialog-card general-dialog">
+        <div class="dialog-head compact-head">
+          <div>
+            <h3 data-i18n="generalSettings">Основные настройки</h3>
+          </div>
+          <button value="cancel" class="dialog-x" title="Закрыть">×</button>
+        </div>
+
+        <section class="settings-section">
+          <div class="settings-section-title" data-i18n="appearance">Внешний вид</div>
+
+          <div class="setting-row">
+            <div>
+              <div class="setting-title" data-i18n="compactMode">Компактный режим</div>
+              <div class="setting-description" data-i18n="compactModeDesc">Уменьшает отступы, чтобы помещалось больше закладок</div>
+            </div>
+            <label class="switch">
+              <input id="compactModeField" type="checkbox" />
+              <span></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div>
+              <div class="setting-title" data-i18n="groupTools">Группировать правые инструменты</div>
+              <div class="setting-description" data-i18n="groupToolsDesc">Оставляет поиск и настройки видимыми, остальные кнопки группирует</div>
+            </div>
+            <label class="switch">
+              <input id="groupToolsField" type="checkbox" />
+              <span></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div>
+              <div class="setting-title" data-i18n="hideExtraBookmarks">Скрывать лишние закладки в длинных досках</div>
+              <div class="setting-description" data-i18n="hideExtraBookmarksDesc">Автоматически прячет лишние элементы в длинных досках</div>
+            </div>
+            <label class="switch">
+              <input id="hideExtraField" type="checkbox" />
+              <span></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div>
+              <div class="setting-title" data-i18n="visibleBookmarks">Видимых закладок до скрытия</div>
+              <div class="setting-description" data-i18n="visibleBookmarksDesc">Сколько закладок показывать перед скрытием остальных</div>
+            </div>
+            <select id="visibleBookmarksField" class="setting-select">
+              <option value="5">5</option>
+              <option value="8">8</option>
+              <option value="10">10</option>
+              <option value="12">12</option>
+              <option value="15">15</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <div>
+              <div class="setting-title" data-i18n="shortenTitles">Сокращать длинные названия</div>
+              <div class="setting-description" data-i18n="shortenTitlesDesc">Показывает длинные названия в одну строку с многоточием</div>
+            </div>
+            <label class="switch">
+              <input id="shortenTitlesField" type="checkbox" />
+              <span></span>
+            </label>
+          </div>
+        </section>
+
+        <menu>
+          <button value="cancel" class="btn ghost"><span data-i18n="cancel">Отмена</span></button>
+          <button id="saveGeneralSettingsBtn" type="button" class="btn primary"><span data-i18n="save">Сохранить</span></button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="settingsDialog">
+      <form method="dialog" class="dialog-card style-dialog">
+        <h3 data-i18n="style">Стиль</h3>
+
+        <div class="segmented">
+          <button id="darkThemeBtn" type="button" data-i18n="dark">Тёмная</button>
+          <button id="lightThemeBtn" type="button" data-i18n="light">Светлая</button>
+        </div>
+
+        <div id="userWallpapersSection" class="style-subsection hidden">
+          <button id="userWallpapersToggle" type="button" class="style-collapse-title">
+            <span>
+              <span data-i18n="yourWallpapers">Ваши фоны</span>
+              <span id="userWallpaperCount" class="badge">0</span>
+            </span>
+            <span class="collapse-chevron">⌃</span>
+          </button>
+          <div id="userWallpapersGrid" class="user-wallpapers-grid"></div>
+        </div>
+
+        <div class="style-section-title">
+          <span data-i18n="starterWallpapers">Встроенные фоны</span>
+          <span id="wallpaperCount" class="badge">6</span>
+        </div>
+
+        <div id="wallpapersGrid" class="wallpapers-grid"></div>
+
+        <label class="inline-label">
+          <span data-i18n="overlay">Затемнение фона</span>
+          <input id="overlayField" type="range" min="20" max="88" step="1" />
+        </label>
+
+        <label class="inline-label">
+          <span data-i18n="accent">Акцентный цвет</span>
+          <input id="accentField" type="color" />
+        </label>
+
+        <div class="style-bottom-actions">
+          <label class="upload-row">
+            <span data-i18n="uploadWallpaper">Загрузить фон</span>
+            <input id="wallpaperFileField" type="file" accept="image/*" />
+          </label>
+          <button id="moreWallpapersBtn" type="button" class="upload-row more-wallpapers-btn">
+            <span data-i18n="moreWallpapers">Больше фонов</span>
+          </button>
+        </div>
+
+        <label class="inline-label">
+          <span data-i18n="wallpaperUrl">Ссылка на фон</span>
+          <input id="wallpaperField" type="url" placeholder="https://..." />
+        </label>
+
+        <label class="inline-label">
+          <span data-i18n="language">Язык</span>
+          <select id="languageField">
+            <option value="ru">Русский</option>
+            <option value="en">English</option>
+          </select>
+        </label>
+
+        <label class="inline-label">
+          <span data-i18n="density">Плотность</span>
+          <select id="densityField">
+            <option value="comfortable" data-i18n="densityComfortable">Обычная</option>
+            <option value="compact" data-i18n="densityCompact">Компактная</option>
+          </select>
+        </label>
+
+        <div class="style-autosave-note" data-i18n="styleAutosave">Изменения применяются автоматически</div>
+      </form>
+    </dialog>
+
+    <dialog id="trashDialog">
+      <form method="dialog" class="dialog-card trash-dialog">
+        <div class="dialog-head">
+          <div>
+            <h3>🗑 Корзина</h3>
+          </div>
+          <p>Элементы автоматически удаляются через 30 дней</p>
+        </div>
+
+        <div class="trash-block">
+          <h4>ЗАКЛАДКИ</h4>
+          <div id="trashLinksList"></div>
+        </div>
+
+        <div class="trash-block">
+          <h4>ДОСКИ</h4>
+          <div id="trashBoardsList"></div>
+        </div>
+
+        <div class="trash-block">
+          <h4>СТРАНИЦЫ</h4>
+          <div id="trashPagesList"></div>
+        </div>
+
+        <menu>
+          <button id="emptyTrashBtn" type="button" class="btn danger">Очистить корзину</button>
+          <button value="cancel" class="btn ghost"><span data-i18n="close">Закрыть</span></button>
+        </menu>
+      </form>
+    </dialog>
+
+
+    <dialog id="wallpaperAdjustDialog">
+      <form method="dialog" class="dialog-card wallpaper-adjust-dialog">
+        <div class="adjust-head">
+          <div>
+            <h3 data-i18n="adjustWallpaperStyle">Настройка стиля фона</h3>
+            <p data-i18n="adjustWallpaperDesc">Цвета подобраны по текущему изображению.</p>
+          </div>
+        </div>
+
+        <div class="adjust-color-grid">
+          <label class="adjust-color-card">
+            <span data-i18n="primaryColor">Основной цвет</span>
+            <strong id="primaryColorText">#000000</strong>
+            <div class="color-input-row">
+              <input id="primaryColorField" type="color" />
+              <button id="pickPrimaryColorBtn" type="button" class="mini-tool-btn" title="Пипетка">⌖</button>
+            </div>
+          </label>
+
+          <label class="adjust-color-card">
+            <span data-i18n="boardColor">Цвет досок</span>
+            <strong id="boardColorText">#000000</strong>
+            <div class="color-input-row">
+              <input id="boardColorField" type="color" />
+              <button id="pickBoardColorBtn" type="button" class="mini-tool-btn" title="Пипетка">⌖</button>
+            </div>
+          </label>
+        </div>
+
+        <label class="adjust-slider-card">
+          <span data-i18n="boardOpacity">Прозрачность досок</span>
+          <strong id="boardOpacityText">75%</strong>
+          <input id="boardOpacityField" type="range" min="30" max="96" step="1" />
+        </label>
+
+        <label class="adjust-slider-card">
+          <span data-i18n="boardBlur">Блюр досок</span>
+          <strong id="boardBlurText">16px</strong>
+          <input id="boardBlurField" type="range" min="0" max="32" step="1" />
+        </label>
+
+        <menu>
+          <button id="resetWallpaperStyleBtn" type="button" class="btn ghost"><span data-i18n="reset">Сбросить</span></button>
+        </menu>
+      </form>
+    </dialog>
+
+
+
+    <dialog id="importBookmarksDialog">
+      <form method="dialog" class="dialog-card import-dialog">
+        <div class="dialog-head compact-head">
+          <div>
+            <h3 data-i18n="importChromeBookmarks">Импорт закладок Chrome</h3>
+            <p data-i18n="importChromeBookmarksDesc">Выбери папки, которые нужно импортировать как доски на текущую страницу:</p>
+          </div>
+        </div>
+
+        <div id="importFoldersList" class="import-folders-list"></div>
+
+        <menu>
+          <button id="skipImportBtn" type="button" class="btn ghost">
+            <span data-i18n="skip">Пропустить</span>
+          </button>
+          <button id="importSelectedBtn" type="button" class="btn primary">
+            <span data-i18n="importSelected">Импортировать выбранное</span>
+          </button>
+        </menu>
+      </form>
+    </dialog>
+
+
+    <dialog id="deletePageDialog">
+      <form method="dialog" class="dialog-card delete-page-dialog">
+        <h3 id="deletePageDialogTitle">Удалить страницу «Home»?</h3>
+        <p id="deletePageDialogText">Страница будет перемещена в корзину вместе со всеми досками. Восстановить её можно в течение 30 дней.</p>
+        <menu>
+          <button id="cancelDeletePageBtn" value="cancel" class="btn ghost">Отмена</button>
+          <button id="confirmDeletePageBtn" type="button" class="btn danger">Удалить</button>
+        </menu>
+      </form>
+    </dialog>
+
+
+
+    <dialog id="bookmarkEditDialog">
+      <form method="dialog" class="dialog-card bookmark-edit-dialog">
+        <h3 data-i18n="editBookmark">Редактировать закладку</h3>
+
+        <label>
+          URL *
+          <input id="bookmarkUrlField" type="url" placeholder="https://example.com" />
+        </label>
+
+        <label>
+          <span>Название *</span>
+          <div class="title-fetch-row">
+            <input id="bookmarkTitleField" type="text" placeholder="Название" />
+            <button id="fetchBookmarkTitleBtn" type="button" class="btn ghost">Получить название</button>
+          </div>
+        </label>
+
+        <label>
+          Описание
+          <textarea id="bookmarkDescriptionField" maxlength="2000" placeholder="Описание, которое будет показано под названием..."></textarea>
+          <span class="char-counter">2000</span>
+        </label>
+
+        <menu>
+          <button value="cancel" class="btn ghost"><span data-i18n="cancel">Отмена</span></button>
+          <button id="saveBookmarkEditBtn" type="button" class="btn primary"><span data-i18n="saveChanges">Сохранить</span></button>
+        </menu>
+      </form>
+    </dialog>
+
+
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="newtab.js"></script>
+</body>
+</html>

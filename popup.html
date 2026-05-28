@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Daniil Start</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main>
+    <div class="head">
+      <div class="logo">D</div>
+      <div>
+        <h1>Daniil Start</h1>
+        <p>быстро добавить вкладку</p>
+      </div>
+    </div>
+
+    <label>
+      Страница
+      <select id="pageSelect"></select>
+    </label>
+
+    <label>
+      Доска
+      <select id="boardSelect"></select>
+    </label>
+
+    <button id="addCurrentBtn">Добавить текущую вкладку</button>
+    <button id="saveWindowBtn" class="secondary">Сохранить всё окно как доску</button>
+    <button id="openStartBtn" class="ghost">Открыть стартовую</button>
+
+    <div id="status"></div>
+  </main>
+
+  <script src="shared.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
